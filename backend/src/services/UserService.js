@@ -1,6 +1,6 @@
 import UserModel from "../models/UserModel.js";
 import bcrypt from "bcryptjs";
-
+import cloudinary from "../lib/cloudinary.js";
 
 const signup = async (UserData) => {
     try {
@@ -87,12 +87,45 @@ const signin = async (UserData) => {
     }
 }
 
+const updateProfile = async (UserData) => {
+    try {
+        const { avatar, userID } = UserData;
 
+        if (!avatar) {
+            return {
+                statusCode: 400,
+                message: "avatar is required",
+            };
+        }
+        if (!userID) {
+            return {
+                statusCode: 401,
+                message: "User not found",
+            };
+        }
 
-
-
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            userID, 
+            { avatar: avatar }, 
+            { new: true }
+        );
+        return {
+            statusCode: 200,
+            message: "Profile updated successfully",
+            data: {
+                _id: updatedUser._id,
+                username: updatedUser.username,
+                email: updatedUser.email,
+                avatar: updatedUser.avatar,
+            },
+        };
+    } catch (error) {
+        throw error;
+    }
+};
 
 export default {
     signup,
     signin,
+    updateProfile,
 };
