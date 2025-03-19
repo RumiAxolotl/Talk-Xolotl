@@ -7,7 +7,6 @@ export const signup = async (req, res) => {
     try {
         const { username, email, password } = req.body;
         const signup = await UserService.signup({ username, email, password });
-        console.log(signup);
         if (signup.data) {
             generateAccessToken(signup.data._id, res);
             generateRefreshToken(signup.data._id, res);
@@ -31,7 +30,6 @@ export const signin = async (req, res) => {
         const { email, password } = req.body;
         const signin = await UserService.signin({ email, password });
 
-        console.log(signin);
         if (signin.data) {
             generateAccessToken(signin.data._id, res);
             generateRefreshToken(signin.data._id, res);
@@ -61,6 +59,18 @@ export const signout = (req, res) => {
     }
 }
 
+/**
+ * Updates the user's profile by uploading a new avatar image to Cloudinary
+ * @async
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user information
+ * @param {Object} req.file - Uploaded file information
+ * @param {Buffer} req.file.buffer - File buffer data
+ * @param {string} req.file.mimetype - MIME type of the uploaded file
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with updated user data or error message
+ * @throws {Error} If there's an issue with file upload or database update
+ */
 export const updateProfile = async (req, res) => {
     try {
         const user = req.user;
@@ -94,4 +104,14 @@ export const updateProfile = async (req, res) => {
         console.log(error.message);
     }
 };
+
+export const checkAuth = async (req, res) => {
+    try {
+        const user = req.user;
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+        console.log(error.message);
+    }
+}
 

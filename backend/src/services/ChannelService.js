@@ -16,6 +16,110 @@ const getMessages = async (req, res) => {
 }
 
 
+const createChannel = async (channelData) => {
+    try {
+        const { name, members } = channelData;
+        const newChannel = await ChannelModel.create({ name, members });
+        return {
+            statusCode: 201,
+            data: newChannel,
+        };
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
+const editChannel = async (channelData) => {
+    try {
+        const { id, name } = channelData;
+        const updatedChannel = await ChannelModel
+            .findByIdAndUpdate(id, {
+                name: name,
+            }, { new: true });
+        return {
+            statusCode: 200,
+            data: updatedChannel,
+        };
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
+const deleteChannel = async (channelData) => {
+    try {
+        const { channelId } = channelData;
+        const deletedChannel = await ChannelModel.findByIdAndDelete(channelId);
+        await UserModel.updateMany({ channels: channelId }, { $pull: { channels: channelId } });
+        await MessageModel.deleteMany({ channelId });
+        return {
+            statusCode: 200,
+            data: deletedChannel,
+        };
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
+const getChannels = async (userId) => {
+    try {
+        const channels = await ChannelModel.find({ members: userId });
+        return {
+            statusCode: 200,
+            data: channels,
+        };
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
+
+
+
+
+const addMember = async (channelData) => {
+    try {
+        const { channelId, userId } = channelData;
+        await ChannelModel.findByIdAndUpdate
+            (channelId, { $push: { members: userId } });
+        await UserModel.findByIdAndUpdate
+            (userId, { $push: { channels: channelId } });
+        return {
+            statusCode: 200,
+            data: "Member added successfully",
+        };
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
+const removeMember = async (channelData) => {
+    try {
+        const { channelId, userId } = channelData;
+        await ChannelModel.findByIdAndUpdate
+            (channelId, { $pull: { members: userId } });
+        await UserModel.findByIdAndUpdate
+            (userId, { $pull: { channels: channelId } });
+        return {
+            statusCode: 200,
+            data: "Member removed successfully",
+        };
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
 export default {
     getMessages,
+    createChannel,
+    editChannel,
+    deleteChannel,
+    getChannels,
+    addMember,
+    removeMember,
 }

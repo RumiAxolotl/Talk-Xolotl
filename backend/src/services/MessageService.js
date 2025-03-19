@@ -51,13 +51,37 @@ const deleteMessage = async (MessageData) => {
     }
 }
 
-
+const findMessagesWithContent = async (searchData) => {
+    try {
+        const { userId, content } = searchData;
+        
+        // Find all channels where the user is a member
+        const userChannels = await ChannelModel.find({ members: userId });
+        const channelIds = userChannels.map(channel => channel._id);
+        
+        // Find messages in these channels containing the specified content
+        const messages = await MessageModel.find({
+            channelId: { $in: channelIds },
+            text: { $regex: content, $options: 'i' }
+        }).populate('senderId', 'username avatar')
+          .sort({ createdAt: -1 }); // Sorts by creation date, newest first
+        
+        return {
+            statusCode: 200,
+            data: messages,
+        };
+    }
+    catch (error) {
+        throw error;
+    }
+}
 
 
 export default {
     sendMessage,
     editMessage,
     deleteMessage,
+    findMessagesWithContent,
 };
     
         

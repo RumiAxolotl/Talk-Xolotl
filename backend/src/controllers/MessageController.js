@@ -38,3 +38,15 @@ export const deleteMessage = async (req, res) => {
 }
 
 
+export const findMessagesWithContent = async (req, res) => {
+    try {
+        const { userId, content } = req.body;
+        const messages = await MessageService.findMessagesWithContent({ userId, content });
+        res.status(200).json(messages);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
